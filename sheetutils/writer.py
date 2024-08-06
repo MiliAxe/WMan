@@ -1,9 +1,9 @@
-from openpyxl.worksheet.worksheet import Worksheet
-from openpyxl.workbook.workbook import Workbook
-from openpyxl.worksheet.table import Table, TableStyleInfo
+from typing import List
+
 from openpyxl.styles import NamedStyle, Alignment
 from openpyxl.utils import get_column_letter
-from typing import List
+from openpyxl.workbook.workbook import Workbook
+from openpyxl.worksheet.table import Table, TableStyleInfo
 
 
 class SheetWriter:
@@ -77,4 +77,4 @@ if __name__ == "__main__":
     writer.make_table("huge_table")
     writer.set_optimal_column_widths()
 
-    writer.save(filename="sample.xlsx")
+    writer.save(filename="../sample.xlsx")
