@@ -4,8 +4,8 @@ from typing import Optional
 
 import typer
 
-from ProductManager import ProductManager
-from database import ProductInfo
+from WMan.ProductManager import ProductManager
+from WMan.database import ProductInfo
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 

@@ -1,8 +1,8 @@
 import rich.table
 from rich import print
 
-import database
-from sheetutils.reader import SheetReader
+import WMan.database as database
+from WMan.sheetutils.reader import SheetReader
 
 
 class ProductManager:

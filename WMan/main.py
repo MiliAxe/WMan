@@ -1,9 +1,9 @@
 import typer
 
-import CLI.product
+from WMan.CLI import product as product
 
 app = typer.Typer(no_args_is_help=True)
-app.add_typer(CLI.product.app, name="product", help="Manage products and get product information")
+app.add_typer(product.app, name="product", help="Manage products and get product information")
 
 if __name__ == "__main__":
     app()
