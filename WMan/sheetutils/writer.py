@@ -1,6 +1,6 @@
 from typing import List
 
-from openpyxl.styles import NamedStyle, Alignment
+from openpyxl.styles import Alignment, NamedStyle
 from openpyxl.utils import get_column_letter
 from openpyxl.workbook.workbook import Workbook
 from openpyxl.worksheet.table import Table, TableStyleInfo
@@ -10,7 +10,8 @@ from openpyxl.worksheet.worksheet import Worksheet
 class SheetWriter:
     def __init__(self):
         self.workbook = Workbook()
-        self.sheet: Worksheet = self.workbook.active
+        if self.workbook.active:
+            self.sheet = self.workbook.active
 
     def add_row_index_column(self):
         self.sheet.insert_cols(1)
@@ -38,20 +39,26 @@ class SheetWriter:
                         max_length = len(str(cell.value))
                 except TypeError:
                     pass
-            adjusted_width = (max_length + 2)
-            self.sheet.column_dimensions[get_column_letter(column[0].column)].width = adjusted_width
+            adjusted_width = max_length + 2
+            self.sheet.column_dimensions[
+                get_column_letter(column[0].column)
+            ].width = adjusted_width
 
     def make_table(self, table_name: str):
-        center_aligned_text = NamedStyle(name="center_aligned_text",
-                                         alignment=Alignment(horizontal="center", vertical="center"))
+        center_aligned_text = NamedStyle(
+            name="center_aligned_text",
+            alignment=Alignment(horizontal="center", vertical="center"),
+        )
         self.sheet.parent.add_named_style(center_aligned_text)
 
         table = Table(displayName=table_name, ref=self.sheet.dimensions)
-        style = TableStyleInfo(name="TableStyleMedium9",
-                               showFirstColumn=False,
-                               showLastColumn=False,
-                               showRowStripes=True,
-                               showColumnStripes=False)
+        style = TableStyleInfo(
+            name="TableStyleMedium9",
+            showFirstColumn=False,
+            showLastColumn=False,
+            showRowStripes=True,
+            showColumnStripes=False,
+        )
         table.tableStyleInfo = style
         self.sheet.add_table(table)
 
@@ -60,7 +67,9 @@ class SheetWriter:
                 cell.style = center_aligned_text
 
     def set_column_currency_format(self, column_index: int):
-        for row in self.sheet.iter_rows(min_row=2, min_col=column_index, max_col=column_index):
+        for row in self.sheet.iter_rows(
+            min_row=2, min_col=column_index, max_col=column_index
+        ):
             for cell in row:
                 cell.number_format = "#,##0_-[$ريال-fa-IR]"
 
@@ -72,7 +81,10 @@ if __name__ == "__main__":
     # Generate a large dataset
     num_rows = 1000
     num_cols = 50
-    sample_data = [[f"Data {row}-{col}" for col in range(1, num_cols + 1)] for row in range(1, num_rows + 1)]
+    sample_data = [
+        [f"Data {row}-{col}" for col in range(1, num_cols + 1)]
+        for row in range(1, num_rows + 1)
+    ]
 
     writer = SheetWriter()
 
