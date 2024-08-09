@@ -44,27 +44,68 @@ class ProductManager:
                 pass
 
     @staticmethod
-    def list(min_price: int = None, max_price: int = None, brand: str = None):
-        products = database.Product.select()
-        if min_price:
-            products = products.where(database.Product.price >= min_price)
-        if max_price:
-            products = products.where(database.Product.price <= max_price)
-        if brand:
-            products = products.where(database.Product.brand == brand)
-
-        table = rich.table.Table(title="Products")
+    def print_products(products):
+        table = Table(title="Products")
         table.add_column("Code", justify="center", style="cyan")
         table.add_column("Description", justify="right", style="magenta")
         table.add_column("Brand", justify="center", style="green")
-        table.add_column("Count in carton", justify="center", style="blue")
+        table.add_column("CIC", justify="center", style="blue")
         table.add_column("Price", justify="right", style="red")
 
         for product in products:
-            table.add_row(product.id, product.description,
-                          product.brand, str(product.count_in_carton), str(product.price))
+            table.add_row(
+                product.id,
+                product.description,
+                product.brand,
+                str(product.count_in_carton),
+                babel.numbers.format_currency(
+                    product.price, "IRR", format="¤¤ #,##0", locale="en_US"
+                ),
+            )
 
         print(table)
+
+    @staticmethod
+    def save_products(filepath: str, products):
+        writer = SheetWriter()
+
+        data = [
+            [
+                product.id,
+                product.description,
+                product.brand,
+                product.count_in_carton,
+                product.price,
+            ]
+            for product in products
+        ]
+
+        headers = ["Code", "Description", "Brand", "CIC", "Price"]
+
+        writer.add_data(data)
+        writer.add_headers(headers)
+        writer.add_row_index_column()
+        writer.make_table("Pricelist")
+        writer.set_column_currency_format(6)
+        writer.set_optimal_column_widths()
+
+        writer.save(filepath)
+
+    @staticmethod
+    def list(
+        output: Optional[str] = None,
+        min_price: Optional[int] = None,
+        max_price: Optional[int] = None,
+        brand: Optional[int] = None,
+    ):
+        products = Product.get_filtered(
+            {"min_price": min_price, "max_price": max_price, "brand": brand}
+        )
+
+        if output:
+            ProductManager.save_products(filepath=output, products=products)
+        else:
+            ProductManager.print_products(products)
 
     @staticmethod
     def remove(code: str):
@@ -74,3 +115,7 @@ class ProductManager:
         except Exception as e:
             print(f"Error deleting product: {e}")
             pass
+
+
+if __name__ == "__main__":
+    ProductManager.list()
