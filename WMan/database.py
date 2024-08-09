@@ -1,7 +1,6 @@
+import datetime
 from typing import Type
 
-import datetime
-import jdatetime
 from peewee import SqliteDatabase, Model, CharField, IntegerField, ForeignKeyField, DateField, CompositeKey, \
     DoesNotExist
 
@@ -15,10 +14,10 @@ class BaseModel(Model):
 
 class Product(BaseModel):
     id = CharField(primary_key=True)
-    description = CharField()
-    brand = CharField()
-    price = IntegerField()
-    count_in_carton = IntegerField()
+    description = CharField(null=True)
+    brand = CharField(null=True)
+    price = IntegerField(null=True)
+    count_in_carton = IntegerField(null=True)
     count = IntegerField(default=0)
 
 
