@@ -4,12 +4,13 @@ from openpyxl.styles import NamedStyle, Alignment
 from openpyxl.utils import get_column_letter
 from openpyxl.workbook.workbook import Workbook
 from openpyxl.worksheet.table import Table, TableStyleInfo
+from openpyxl.worksheet.worksheet import Worksheet
 
 
 class SheetWriter:
     def __init__(self):
         self.workbook = Workbook()
-        self.sheet = self.workbook.active
+        self.sheet: Worksheet = self.workbook.active
 
     def add_row_index_column(self):
         self.sheet.insert_cols(1)
@@ -24,7 +25,7 @@ class SheetWriter:
         for col_index, header in enumerate(headers):
             self.sheet.cell(1, col_index + 1, value=header)
 
-    def add_data_to_sheet(self, data: List[List]) -> None:
+    def add_data(self, data: List[List]) -> None:
         for row in data:
             self.sheet.append(row)
 
@@ -34,7 +35,7 @@ class SheetWriter:
             for cell in column:
                 try:
                     if len(str(cell.value)) > max_length:
-                        max_length = len(cell.value)
+                        max_length = len(str(cell.value))
                 except TypeError:
                     pass
             adjusted_width = (max_length + 2)
@@ -58,6 +59,11 @@ class SheetWriter:
             for cell in row:
                 cell.style = center_aligned_text
 
+    def set_column_currency_format(self, column_index: int):
+        for row in self.sheet.iter_rows(min_row=2, min_col=column_index, max_col=column_index):
+            for cell in row:
+                cell.number_format = "#,##0_-[$ريال-fa-IR]"
+
     def save(self, filename: str):
         self.workbook.save(filename)
 
@@ -71,10 +77,24 @@ if __name__ == "__main__":
     writer = SheetWriter()
 
     # Add data, headers, row index column, and make it a table
-    writer.add_data_to_sheet(sample_data)
+    writer.add_data(sample_data)
     writer.add_headers([f"Col {i}" for i in range(1, num_cols + 1)])
     writer.add_row_index_column()
     writer.make_table("huge_table")
     writer.set_optimal_column_widths()
 
-    writer.save(filename="../sample.xlsx")
+    writer.save(filename="../../sample.xlsx")
+
+    # Generate a car sample pricelist:
+
+    # data = [["Mercedes", 7123472743274], ["BMW", 7123471724], ["Lamborghini", 366246612]]
+    # headers = ["Brand", "Price"]
+    #
+    # writer = SheetWriter()
+    # writer.add_data(data)
+    # writer.add_headers(headers)
+    # writer.add_row_index_column()
+    # writer.make_table("Car_Prices")
+    # writer.set_column_currency_format(3)
+    # writer.set_optimal_column_widths()
+    # writer.save(filename="sample.xlsx")
