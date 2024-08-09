@@ -1,31 +1,41 @@
-import rich.table
-from rich import print
+from typing import Optional
 
-import WMan.database as database
+import babel.numbers
+from rich import print
+from rich.table import Table
+
+from WMan.database import Product, ProductInfo, db
 from WMan.sheetutils.reader import SheetReader
+from WMan.sheetutils.writer import SheetWriter
 
 
 class ProductManager:
     def __init__(self):
-        database.db.connect()
-        database.db.create_tables([database.Product])
+        db.connect()
+        db.create_tables([Product])
 
     @staticmethod
-    def add(product_info: database.ProductInfo):
-        database.add_product_to_database(product_info)
+    def add(product_info: ProductInfo):
+        Product.add(product_info)
 
     @staticmethod
-    def add_batch(filepath: str, id_column: int, description_column: int, brand_column: int,
-                  price_column: int, count_in_carton_column: int):
+    def add_batch(
+        filepath: str,
+        id_column: int,
+        description_column: int,
+        brand_column: int,
+        price_column: int,
+        count_in_carton_column: int,
+    ):
         reader = SheetReader(filepath)
         data = reader.get_data()
         for product in data:
-            new_product = database.ProductInfo(
+            new_product = ProductInfo(
                 code=product[id_column],
                 description=product[description_column],
                 brand=product[brand_column],
                 price=product[price_column],
-                count_in_carton=product[count_in_carton_column]
+                count_in_carton=product[count_in_carton_column],
             )
             try:
                 ProductManager.add(new_product)
@@ -59,7 +69,7 @@ class ProductManager:
     @staticmethod
     def remove(code: str):
         try:
-            product = database.Product.get(database.Product.id == code)
+            product = Product.get(Product.id == code)
             product.delete_instance()
         except Exception as e:
             print(f"Error deleting product: {e}")
