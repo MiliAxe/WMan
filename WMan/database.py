@@ -1,10 +1,29 @@
 import datetime
-from typing import Type
+from typing import Dict, Optional, Type
 
-from peewee import SqliteDatabase, Model, CharField, IntegerField, ForeignKeyField, DateField, CompositeKey, \
-    DoesNotExist
+from peewee import (
+    CharField,
+    CompositeKey,
+    DateField,
+    DoesNotExist,
+    ForeignKeyField,
+    IntegerField,
+    Model,
+    SqliteDatabase,
+)
 
 db = SqliteDatabase("warehouse.db")
+
+
+class ProductInfo:
+    def __init__(
+        self, code: str, description: str, brand: str, count_in_carton: int, price: int
+    ) -> None:
+        self.code = code
+        self.description = description
+        self.brand = brand
+        self.count_in_carton = count_in_carton
+        self.price = price
 
 
 class BaseModel(Model):
@@ -20,32 +39,88 @@ class Product(BaseModel):
     count_in_carton = IntegerField(null=True)
     count = IntegerField(default=0)
 
+    @classmethod
+    def add_count(cls, product_code: str, count: int) -> None:
+        selected_product = get_or_raise(cls, product_code)
+        selected_product.count += count
+
+    @classmethod
+    def add(cls, product_info: ProductInfo):
+        new_product = Product.create(
+            id=product_info.code,
+            description=product_info.description,
+            brand=product_info.brand,
+            count_in_carton=product_info.count_in_carton,
+            count=0,
+            price=product_info.price,
+        )
+        return new_product
+
+    @classmethod
+    def get_count(cls, product_code: str):
+        selected_product = get_or_raise(Product, product_code)
+        return selected_product.count
+
+    @classmethod
+    def get_filtered(cls, filters: Optional[Dict[str, str | int | None]]):
+        query = cls.select()
+
+        if filters:
+            for field, value in filters.items():
+                if field == "min_price" and value:
+                    query = query.where(cls.price >= value)
+                if field == "max_price" and value:
+                    query = query.where(cls.price <= value)
+                if field == "brand" and value:
+                    query = query.where(cls.brand == value)
+
+        return query
+
 
 class Customer(BaseModel):
     name = CharField()
 
+    @classmethod
+    def add(cls, name: str) -> "Customer":
+        customer = Customer.create(name=name)
+        return customer
+
+    @classmethod
+    def get_customer_id(cls, customer_name: str) -> int:
+        selected_customer = Customer.get(Customer.name == customer_name)
+        return selected_customer.id
+
 
 class Order(BaseModel):
     date = DateField(default=datetime.datetime.now)
-    customer = ForeignKeyField(Customer, backref='orders')
+    customer = ForeignKeyField(Customer, backref="orders")
+
+    @classmethod
+    def create_order(cls, customer_id: int) -> "Order":
+        selected_customer = get_or_raise(Customer, str(customer_id))
+
+        order = Order.create(customer=selected_customer)
+        return order
+
+    @classmethod
+    def add_product_to_order(cls, order_id: int, product_code: str, count: int) -> None:
+        if Product.get_count(product_code) < count:
+            raise Exception("There is not enough available product for this order")
+
+        selected_order = Order.get(Order.id == order_id)
+        selected_product = Product.get(Product.id == product_code)
+        return OrderProduct.create(
+            count=count, order=selected_order, product=selected_product
+        )
 
 
 class OrderProduct(BaseModel):
     count = IntegerField()
-    product = ForeignKeyField(Product, backref='orders')
-    order = ForeignKeyField(Order, backref='products')
+    product = ForeignKeyField(Product, backref="orders")
+    order = ForeignKeyField(Order, backref="products")
 
     class Meta:
-        primary_key = CompositeKey('product', 'order')
-
-
-class ProductInfo:
-    def __init__(self, code: str, description: str, brand: str, count_in_carton: int, price: int) -> None:
-        self.code = code
-        self.description = description
-        self.brand = brand
-        self.count_in_carton = count_in_carton
-        self.price = price
+        primary_key = CompositeKey("product", "order")
 
 
 class NotFoundException(Exception):
@@ -61,60 +136,9 @@ def get_or_raise(model_object: Type[Model], model_identifier: str):
     return selected_object
 
 
-def add_product_to_database(product_info: ProductInfo) -> Product:
-    new_product = Product.create(
-        id=product_info.code,
-        description=product_info.description,
-        brand=product_info.brand,
-        count_in_carton=product_info.count_in_carton,
-        count=0,
-        price=product_info.price
-    )
-    return new_product
-
-
-def add_product_count(product_code: str, count: int) -> None:
-    selected_product = get_or_raise(Product, product_code)
-
-    selected_product.count += count
-    selected_product.save()
-
-
-def get_product_count(product_code: str) -> int:
-    selected_product = get_or_raise(Product, product_code)
-
-    return selected_product.count
-
-
-def add_customer_to_database(name: str) -> Customer:
-    customer = Customer.create(name=name)
-    return customer
-
-
-def get_customer_id(customer_name: str) -> int:
-    selected_customer = Customer.get(Customer.name == customer_name)
-    return selected_customer.id
-
-
-def create_order(customer_id: int) -> Order:
-    selected_customer = get_or_raise(Customer, str(customer_id))
-
-    order = Order.create(customer=selected_customer)
-    return order
-
-
-def add_product_to_order(order_id: int, product_code: str, count: int):
-    if get_product_count(product_code) < count:
-        raise Exception("There is not enough available product for this order")
-
-    selected_order = Order.get(Order.id == order_id)
-    selected_product = Product.get(Product.id == product_code)
-    return OrderProduct.create(
-        count=count,
-        order=selected_order,
-        product=selected_product
-    )
+def create_tables():
+    db.create_tables([Product, Customer, Order, OrderProduct])
 
 
 if __name__ == "__main__":
-    db.create_tables([Product, Customer, Order, OrderProduct])
+    create_tables()
