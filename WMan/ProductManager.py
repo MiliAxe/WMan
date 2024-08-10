@@ -1,5 +1,3 @@
-from typing import Optional
-
 import babel.numbers
 from rich import print
 from rich.table import Table
@@ -93,10 +91,10 @@ class ProductManager:
 
     @staticmethod
     def list(
-        output: Optional[str] = None,
-        min_price: Optional[int] = None,
-        max_price: Optional[int] = None,
-        brand: Optional[int] = None,
+        output: str | None = None,
+        min_price: int | None = None,
+        max_price: int | None = None,
+        brand: str | None = None,
     ):
         products = Product.get_filtered(
             {"min_price": min_price, "max_price": max_price, "brand": brand}

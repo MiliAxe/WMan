@@ -1,10 +1,7 @@
-from typing import List
-
 from openpyxl.styles import Alignment, NamedStyle
 from openpyxl.utils import get_column_letter
 from openpyxl.workbook.workbook import Workbook
 from openpyxl.worksheet.table import Table, TableStyleInfo
-from openpyxl.worksheet.worksheet import Worksheet
 
 
 class SheetWriter:
@@ -15,18 +12,18 @@ class SheetWriter:
 
     def add_row_index_column(self):
         self.sheet.insert_cols(1)
-        self.sheet.cell(row=1, column=1, value="Row index")
+        _ = self.sheet.cell(row=1, column=1, value="Row index")
 
         for row_num in range(1, self.sheet.max_row):
-            self.sheet.cell(row=row_num + 1, column=1, value=str(row_num))
+            _ = self.sheet.cell(row=row_num + 1, column=1, value=str(row_num))
 
-    def add_headers(self, headers: List[str]):
+    def add_headers(self, headers: list[str]):
         self.sheet.insert_rows(1)
 
         for col_index, header in enumerate(headers):
-            self.sheet.cell(1, col_index + 1, value=header)
+            _ = self.sheet.cell(1, col_index + 1, value=header)
 
-    def add_data(self, data: List[List]) -> None:
+    def add_data(self, data: list[list[int | str]]) -> None:
         for row in data:
             self.sheet.append(row)
 
@@ -49,6 +46,9 @@ class SheetWriter:
             name="center_aligned_text",
             alignment=Alignment(horizontal="center", vertical="center"),
         )
+
+        if not self.sheet.parent:
+            raise Exception("Sheet parent doesn't exist'")
         self.sheet.parent.add_named_style(center_aligned_text)
 
         table = Table(displayName=table_name, ref=self.sheet.dimensions)

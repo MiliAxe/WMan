@@ -17,7 +17,12 @@ db = SqliteDatabase("warehouse.db")
 
 class ProductInfo:
     def __init__(
-        self, code: str, description: str, brand: str, count_in_carton: int, price: int
+        self,
+        code: str | None,
+        description: str | None,
+        brand: str | None,
+        count_in_carton: int | None,
+        price: int | None,
     ) -> None:
         self.code = code
         self.description = description
