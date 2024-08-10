@@ -1,4 +1,5 @@
 from typer import Typer, prompt
+from typing import Optional
 
 from WMan.database import ProductInfo
 from WMan.ProductManager import ProductManager
@@ -9,11 +10,11 @@ app = Typer()
 @app.command()
 def add(
     interactive: bool = False,
-    code: str | None = None,
-    description: str | None = None,
-    brand: str | None = None,
-    price: int | None = None,
-    count_in_carton: int | None = None,
+    code: Optional[str] = None,
+    description: Optional[str] = None,
+    brand: Optional[str] = None,
+    price: Optional[int] = None,
+    count_in_carton: Optional[int] = None,
 ):
     """
     Add a new product
@@ -61,10 +62,10 @@ def add_batch(
 
 @app.command()
 def list(
-    output: str | None = None,
-    brand: str | None = None,
-    min_price: int | None = None,
-    max_price: int | None = None,
+    output: Optional[str] = None,
+    brand: Optional[str] = None,
+    min_price: Optional[int] = None,
+    max_price: Optional[int] = None,
 ):
     """
     List all products or specific products
