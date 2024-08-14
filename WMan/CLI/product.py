@@ -48,15 +48,18 @@ def add_batch(
     count_in_carton: int = 2,
 ):
     """
-    Add multiple products from a file
+    Add multiple products from a .xlsx file
     """
+    indexes = ColumnIndexes(
+        code_column=id_column,
+        description_column=description_column,
+        brand_column=brand_column,
+        price_column=price_column,
+        count_in_carton_column=count_in_carton
+    )
     ProductManager.add_batch(
-        filepath,
-        id_column,
-        description_column,
-        brand_column,
-        price_column,
-        count_in_carton,
+            filepath,
+            indexes
     )
 
 
@@ -70,11 +73,14 @@ def list(
     """
     List all products or specific products
     """
-    ProductManager.list(
-        output=output, brand=brand, min_price=min_price, max_price=max_price
+    ProductManager.list_products(
+        output=output, filters= {
+            "brand": brand,
+            "min_price": min_price,
+            "max_price": max_price
+        }
     )
     pass
-
 
 @app.command()
 def remove(code: str):
@@ -83,3 +89,50 @@ def remove(code: str):
     """
     ProductManager.remove(code)
     pass
+
+
+@app.command()
+def update(
+    code: str,
+    new_brand: Optional[str] = None,
+    new_description: Optional[str] = None,
+    new_price: Optional[int] = None,
+    new_count_in_carton: Optional[int] = None,
+):
+    """
+    Updates the given product with the new values
+    """
+    edited_product = ProductInfo(
+        code=code,
+        description=new_description,
+        brand=new_brand,
+        count_in_carton=new_count_in_carton,
+        price=new_price,
+    )
+    ProductManager.update(code, edited_product)
+
+
+@app.command()
+def update_batch(
+    filepath: str,
+    id_column: int = 1,
+    description_column: int = 3,
+    brand_column: int = 7,
+    price_column: int = 4,
+    count_in_carton: int = 2,
+):
+    """
+    Update multiple products from a .xlsx file
+    """
+    indexes = ColumnIndexes(
+        code_column=id_column,
+        description_column=description_column,
+        brand_column=brand_column,
+        price_column=price_column,
+        count_in_carton_column=count_in_carton
+    )
+
+    ProductManager.update_batch(
+        filepath,
+        indexes,
+    )
