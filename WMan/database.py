@@ -50,6 +50,15 @@ class Product(BaseModel):
     def add_count(cls, product_code: str, count: int) -> None:
         selected_product = get_or_raise(cls, product_code)
         selected_product.count += count
+        selected_product.save()
+
+    @classmethod
+    def reduce_count(cls, product_code: str, count: int) -> None:
+        selected_product = get_or_raise(cls, product_code)
+        if selected_product.count < count:
+            raise Exception("There is not enough available product")
+        selected_product.count -= count
+        selected_product.save()
 
     @classmethod
     def add(cls, product_info: ProductInfo):
