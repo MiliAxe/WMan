@@ -19,16 +19,18 @@ class ProductInfo:
     def __init__(
         self,
         code: str | None,
-        description: str | None,
-        brand: str | None,
-        count_in_carton: int | None,
-        price: int | None,
+        description: str | None = None,
+        brand: str | None = None,
+        count_in_carton: int | None = None,
+        price: int | None = None,
+        count: int | None = None,
     ) -> None:
         self.code = code
         self.description = description
         self.brand = brand
         self.count_in_carton = count_in_carton
         self.price = price
+        self.count = count
 
 
 class BaseModel(Model):
