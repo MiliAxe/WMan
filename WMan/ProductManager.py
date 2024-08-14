@@ -114,14 +114,12 @@ class ProductManager:
         writer.save(filepath)
 
     @staticmethod
-    def list(
+    def list_products(
         output: str | None = None,
-        min_price: int | None = None,
-        max_price: int | None = None,
-        brand: str | None = None,
+        filters: dict[str, str | int | None] = {}
     ):
         products = Product.get_filtered(
-            {"min_price": min_price, "max_price": max_price, "brand": brand}
+                filters
         )
 
         if output:
