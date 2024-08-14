@@ -1,8 +1,10 @@
+from typing import Callable
+
 import babel.numbers
 from rich import print
 from rich.table import Table
 
-from WMan.database import Product, ProductInfo, db
+from WMan.database import Product, ProductInfo, db, get_or_raise
 from WMan.sheetutils.reader import SheetReader
 from WMan.sheetutils.writer import SheetWriter
 
@@ -274,4 +276,4 @@ class ProductManager:
             
 
 if __name__ == "__main__":
-    ProductManager.list()
+    ProductManager.list_products()

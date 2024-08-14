@@ -1,20 +1,22 @@
-from typer import Typer, prompt
 from typing import Optional
 
+from typer import Typer, prompt, Option
+
+from WMan.ProductManager import ProductManager, ColumnIndexes
 from WMan.database import ProductInfo
-from WMan.ProductManager import ProductManager
+
 
 app = Typer()
 
 
 @app.command()
 def add(
-    interactive: bool = False,
-    code: Optional[str] = None,
-    description: Optional[str] = None,
-    brand: Optional[str] = None,
-    price: Optional[int] = None,
-    count_in_carton: Optional[int] = None,
+    interactive: bool = Option(False, help="Interactive mode"),
+    code: Optional[str] = Option(..., help="The product code"),
+    description: Optional[str] = Option(None, help="The product description"),
+    brand: Optional[str] = Option(None, help="The product brand"),
+    price: Optional[int] = Option(None, help="The product price"),
+    count_in_carton: Optional[int] = Option(None, help="The count in carton"),
 ):
     """
     Add a new product
