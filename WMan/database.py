@@ -78,6 +78,10 @@ class Product(BaseModel):
                     query = query.where(cls.price <= value)
                 if field == "brand" and value:
                     query = query.where(cls.brand == value)
+                if field == "min_count" and value:
+                    query = query.where(cls.count >= value)
+                if field == "max_count" and value:
+                    query = query.where(cls.count <= value)
 
         return query
 
