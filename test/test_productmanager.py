@@ -2,14 +2,15 @@ import os
 import sys
 from unittest.mock import patch
 import unittest
-# from WMan.ProductManager import ProductManager, ColumnIndexes, ProductInfo, Product
-from WMan.ProductManager import ProductManager, ProductInfo, Product
 
-# sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
+from WMan.database import Product, ProductInfo
+from WMan.ProductManager import ProductManager
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../WMan')))
 
 class TestProductManager(unittest.TestCase):
     @patch.object(Product, 'get')
-    def test_update(self, mock_get):
+    def test_product_update(self, mock_get):
         # Mock the get method to return a product
         mock_get.return_value = Product(id='123', description='Test Product', brand='Test Brand', price=10.0, count_in_carton=5)
 
@@ -26,8 +27,8 @@ class TestProductManager(unittest.TestCase):
         self.assertEqual(mock_get.return_value.brand, 'Updated Brand')
         self.assertEqual(mock_get.return_value.price, 15.0)
         self.assertEqual(mock_get.return_value.count_in_carton, 10)
-        # self.assertEqual(mock_get.return_value.count, 30)
+        
 
-
+    
 if __name__ == '__main__':
     unittest.main()

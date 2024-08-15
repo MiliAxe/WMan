@@ -9,7 +9,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 
 class TestSheetReader(unittest.TestCase):
     def test_cars(self):
-        reader = SheetReader("assets/reader_cars.xlsx")
+        current_path = os.path.dirname(__file__)
+        asset_path = current_path + "/assets/reader_cars.xlsx"
+        reader = SheetReader(asset_path)
         data = reader.get_data()
 
         self.assertEqual(data[0], [1, "Lamborghini", 400000])
