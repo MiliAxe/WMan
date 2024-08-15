@@ -1,4 +1,4 @@
-from openpyxl.styles import Alignment, NamedStyle
+from openpyxl.styles import Alignment, NamedStyle, Font
 from openpyxl.utils import get_column_letter
 from openpyxl.workbook.workbook import Workbook
 from openpyxl.worksheet.table import Table, TableStyleInfo
@@ -72,6 +72,23 @@ class SheetWriter:
         ):
             for cell in row:
                 cell.number_format = "#,##0_-[$ريال-fa-IR]"
+    
+    def add_header(self, header: str):
+        header_style = NamedStyle("header_style", alignment=Alignment(horizontal="center", vertical="center"), font=Font(bold=True, size=20))
+        self.sheet.insert_rows(1)
+        self.sheet.merge_cells(start_row=1, start_column=1, end_row=1, end_column=self.sheet.max_column)
+        self.sheet.cell(1, 1, value=header)
+        self.sheet.cell(1,1).style = header_style
+
+    def add_subheader(self, left_header: str, right_header: str):
+        header_style = NamedStyle("sub_header_style", alignment=Alignment(horizontal="center", vertical="center"), font=Font(bold=True, size=10))
+        self.sheet.insert_rows(1)
+        self.sheet.cell(1, 1, value=left_header)
+        self.sheet.cell(1, self.sheet.max_column, value=right_header)
+        self.sheet.cell(1, 1).style = header_style
+        self.sheet.cell(1, self.sheet.max_column).style = header_style
+
+        
 
     def save(self, filename: str):
         self.workbook.save(filename)
@@ -94,6 +111,8 @@ if __name__ == "__main__":
     writer.add_row_index_column()
     writer.make_table("huge_table")
     writer.set_optimal_column_widths()
+    writer.add_subheader("Left Header", "Right Header")
+    writer.add_header("Huge Table")
 
     writer.save(filename="../../sample.xlsx")
 
