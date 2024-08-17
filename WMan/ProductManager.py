@@ -1,7 +1,7 @@
 from typing import Callable
 
 import babel.numbers
-from rich import print
+import rich
 from rich.table import Table
 
 from WMan.database import Product, ProductInfo, db, get_or_raise
@@ -17,7 +17,7 @@ class ColumnIndexes:
         brand_column: int | None = None,
         price_column: int | None = None,
         count_in_carton_column: int | None = None,
-        count_column: int | None = None
+        count_column: int | None = None,
     ):
         self.code = code_column
         self.description = description_column
@@ -69,10 +69,7 @@ class ProductManager:
         Product.add(product_info)
 
     @staticmethod
-    def add_batch(
-        filepath: str,
-        indexes : ColumnIndexes
-    ):
+    def add_batch(filepath: str, indexes: ColumnIndexes):
         ProductManager.batch_apply(filepath, indexes, ProductManager.add)
 
     @staticmethod
@@ -86,7 +83,7 @@ class ProductManager:
 
         for product in products:
             table.add_row(
-                product.id,
+                product.code,
                 product.description,
                 product.brand,
                 str(product.count_in_carton),
@@ -95,7 +92,7 @@ class ProductManager:
                 ),
             )
 
-        print(table)
+        rich.print(table)
 
     @staticmethod
     def save_products(filepath: str, products):
@@ -103,7 +100,7 @@ class ProductManager:
 
         data = [
             [
-                product.id,
+                product.code,
                 product.description,
                 product.brand,
                 product.count_in_carton,
@@ -125,12 +122,9 @@ class ProductManager:
 
     @staticmethod
     def list_products(
-        output: str | None = None,
-        filters: dict[str, str | int | None] = {}
+        output: str | None = None, filters: dict[str, str | int | None] = {}
     ):
-        products = Product.get_filtered(
-                filters
-        )
+        products = Product.get_filtered(filters=filters)
 
         if output:
             ProductManager.save_products(filepath=output, products=products)
@@ -160,10 +154,7 @@ class ProductManager:
         selected_product.save()
 
     @staticmethod
-    def update_batch(
-        filepath: str,
-        indexes: ColumnIndexes
-    ):
+    def update_batch(filepath: str, indexes: ColumnIndexes):
         ProductManager.batch_apply(filepath, indexes, ProductManager.update)
 
     @staticmethod
@@ -181,7 +172,7 @@ class ProductManager:
     @staticmethod
     def reduce_count_batch(filepath: str, column_index: ColumnIndexes):
         ProductManager.batch_apply(filepath, column_index, ProductManager.reduce_count)
-        
+
     @staticmethod
     def print_availability(products):
         table = Table(title="Availability")
@@ -200,7 +191,7 @@ class ProductManager:
             total_count += product.count
             total_price += product.price * product.count
             table.add_row(
-                product.id,
+                product.code,
                 product.description,
                 product.brand,
                 str(product.count_in_carton),
@@ -208,11 +199,14 @@ class ProductManager:
                     product.price, "IRR", format="¤¤ #,##0", locale="en_US"
                 ),
                 babel.numbers.format_currency(
-                    product.price * product.count, "IRR", format="¤¤ #,##0", locale="en_US"
+                    product.price * product.count,
+                    "IRR",
+                    format="¤¤ #,##0",
+                    locale="en_US",
                 ),
                 str(product.count),
             )
-            
+
         table.add_section()
         table.add_row(
             "Total",
@@ -223,33 +217,37 @@ class ProductManager:
             babel.numbers.format_currency(
                 total_price, "IRR", format="¤¤ #,##0", locale="en_US"
             ),
-            str(total_count)
-
+            str(total_count),
         )
 
-        print(table)
-        
-        
-    
-        
+        rich.print(table)
+
     @staticmethod
     def save_availability(filepath: str, products):
         writer = SheetWriter()
 
         data = [
             [
-                product.id,
+                product.code,
                 product.description,
                 product.brand,
                 product.count_in_carton,
                 product.price,
                 product.price * product.count,
-                product.count
+                product.count,
             ]
             for product in products
         ]
 
-        headers = ["Code", "Description", "Brand", "CIC", "Price", "Total Price", "Count"]
+        headers = [
+            "Code",
+            "Description",
+            "Brand",
+            "CIC",
+            "Price",
+            "Total Price",
+            "Count",
+        ]
 
         writer.add_data(data)
         writer.add_headers(headers)
@@ -263,16 +261,17 @@ class ProductManager:
 
     @staticmethod
     def list_availability(
-        output: str | None = None,
-        filters: dict[str, str | int | None] = {}
+        output: str | None = None, filters: dict[str, str | int | None] = {}
     ):
         selected_products = Product.get_filtered(filters)
-        
+
         if output:
-            ProductManager.save_availability(filepath=output, products=selected_products)
+            ProductManager.save_availability(
+                filepath=output, products=selected_products
+            )
         else:
             ProductManager.print_availability(selected_products)
-            
+
     @staticmethod
     def get_availability(codes: list[str]):
         products = []
@@ -281,7 +280,6 @@ class ProductManager:
             products.append(selected_product)
         ProductManager.print_availability(products)
 
-            
 
 if __name__ == "__main__":
     ProductManager.list_products()

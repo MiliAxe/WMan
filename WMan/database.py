@@ -94,7 +94,14 @@ class Product(BaseModel):
                 if field == "max_count" and value:
                     query = query.where(cls.count <= value)
 
-        return query
+        return [ProductInfo(
+            code=product.id,
+            description=product.description,
+            brand=product.brand,
+            count_in_carton=product.count_in_carton,
+            price=product.price,
+            count=product.count,
+        ) for product in query]
 
 
 class Customer(BaseModel):
