@@ -31,6 +31,18 @@ class ProductInfo:
         self.count_in_carton = count_in_carton
         self.price = price
         self.count = count
+        
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, ProductInfo):
+            return False
+        return (
+            self.code == value.code
+            and self.description == value.description
+            and self.brand == value.brand
+            and self.count_in_carton == value.count_in_carton
+            and self.price == value.price
+            and self.count == value.count
+        )
 
 
 class BaseModel(Model):
