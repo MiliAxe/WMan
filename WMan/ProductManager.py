@@ -31,16 +31,24 @@ class ProductManager:
     def __init__(self):
         db.connect()
         db.create_tables([Product])
-        
+
     @staticmethod
     def get_product_from_indexes(product: list, indexes: ColumnIndexes):
         return ProductInfo(
-            code=product[indexes.code] if indexes.code else None,
-            description=product[indexes.description] if indexes.description else None,
-            brand=product[indexes.brand] if indexes.brand else None,
-            price=product[indexes.price] if indexes.price else None,
-            count_in_carton=product[indexes.count_in_carton] if indexes.count_in_carton else None,
-            count= product[indexes.count] if indexes.count else None 
+            code=product[indexes.code] if indexes.code is not None else None,
+            description=(
+                product[indexes.description]
+                if indexes.description is not None
+                else None
+            ),
+            brand=product[indexes.brand] if indexes.brand is not None else None,
+            price=product[indexes.price] if indexes.price is not None else None,
+            count_in_carton=(
+                product[indexes.count_in_carton]
+                if indexes.count_in_carton is not None
+                else None
+            ),
+            count=product[indexes.count] if indexes.count is not None else None,
         )
 
     @staticmethod
