@@ -2,6 +2,7 @@ from typer import Typer
 
 from WMan.CLI import availability as availability
 from WMan.CLI import customer as customer
+from WMan.CLI import order as order
 from WMan.CLI import product as product
 from WMan.database import create_tables
 
@@ -19,6 +20,7 @@ app.add_typer(
     name="customer",
     help="Manage and get information about customers",
 )
+app.add_typer(order.app, name="order", help="Manage and get order information")
 
 if __name__ == "__main__":
     create_tables()
