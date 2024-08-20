@@ -31,7 +31,7 @@ class ProductInfo:
         self.count_in_carton = count_in_carton
         self.price = price
         self.count = count
-        
+
     def __eq__(self, value: object) -> bool:
         if not isinstance(value, ProductInfo):
             return False
@@ -85,6 +85,11 @@ class Product(BaseModel):
         return new_product
 
     @classmethod
+    def remove(cls, product_code: str):
+        product = get_or_raise(Product, product_code)
+        product.delete_instance()
+
+    @classmethod
     def get_count(cls, product_code: str):
         selected_product = get_or_raise(Product, product_code)
         return selected_product.count
@@ -106,14 +111,17 @@ class Product(BaseModel):
                 if field == "max_count" and value:
                     query = query.where(cls.count <= value)
 
-        return [ProductInfo(
-            code=product.id,
-            description=product.description,
-            brand=product.brand,
-            count_in_carton=product.count_in_carton,
-            price=product.price,
-            count=product.count,
-        ) for product in query]
+        return [
+            ProductInfo(
+                code=product.id,
+                description=product.description,
+                brand=product.brand,
+                count_in_carton=product.count_in_carton,
+                price=product.price,
+                count=product.count,
+            )
+            for product in query
+        ]
 
 
 class Customer(BaseModel):

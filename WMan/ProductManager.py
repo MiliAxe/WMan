@@ -133,12 +133,7 @@ class ProductManager:
 
     @staticmethod
     def remove(code: str):
-        try:
-            product = Product.get(Product.id == code)
-            product.delete_instance()
-        except Exception as e:
-            print(f"Error deleting product: {e}")
-            pass
+        Product.remove(code)
 
     @staticmethod
     def update(edited_product: ProductInfo):
