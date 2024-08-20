@@ -10,18 +10,20 @@ class SheetWriter:
         if self.workbook.active:
             self.sheet = self.workbook.active
 
-    def add_row_index_column(self):
-        self.sheet.insert_cols(1)
-        _ = self.sheet.cell(row=1, column=1, value="Row index")
+    def add_row_index_column(self, column_index: int = 1):
+        self.sheet.insert_cols(column_index)
+        _ = self.sheet.cell(row=1, column=column_index, value="Row index")
 
         for row_num in range(1, self.sheet.max_row):
-            _ = self.sheet.cell(row=row_num + 1, column=1, value=str(row_num))
+            _ = self.sheet.cell(
+                row=row_num + 1, column=column_index, value=str(row_num)
+            )
 
-    def add_headers(self, headers: list[str]):
-        self.sheet.insert_rows(1)
+    def add_headers(self, headers: list[str], row_index: int = 1):
+        self.sheet.insert_rows(row_index)
 
         for col_index, header in enumerate(headers):
-            _ = self.sheet.cell(1, col_index + 1, value=header)
+            _ = self.sheet.cell(row_index, col_index + 1, value=header)
 
     def add_data(self, data: list[list[int | str]]) -> None:
         for row in data:
@@ -41,23 +43,25 @@ class SheetWriter:
                 get_column_letter(column[0].column)
             ].width = adjusted_width
 
-    def make_table(self, table_name: str):
+    def make_table(self, table_name: str, start_row: int = 1):
         center_aligned_text = NamedStyle(
             name="center_aligned_text",
             alignment=Alignment(horizontal="center", vertical="center"),
         )
 
+        table_range = f"{self.sheet.cell(start_row, 1).coordinate}:{self.sheet.cell(self.sheet.max_row, self.sheet.max_column).coordinate}"
+
         if not self.sheet.parent:
             raise Exception("Sheet parent doesn't exist'")
         self.sheet.parent.add_named_style(center_aligned_text)
 
-        table = Table(displayName=table_name, ref=self.sheet.dimensions)
+        table = Table(displayName=table_name, ref=table_range)
         style = TableStyleInfo(
             name="TableStyleMedium9",
             showFirstColumn=False,
             showLastColumn=False,
-            showRowStripes=True,
-            showColumnStripes=False,
+            showRowStripes=False,
+            showColumnStripes=True,
         )
         table.tableStyleInfo = style
         self.sheet.add_table(table)
@@ -72,23 +76,31 @@ class SheetWriter:
         ):
             for cell in row:
                 cell.number_format = "#,##0_-[$ريال-fa-IR]"
-    
+
     def add_header(self, header: str):
-        header_style = NamedStyle("header_style", alignment=Alignment(horizontal="center", vertical="center"), font=Font(bold=True, size=20))
+        header_style = NamedStyle(
+            "header_style",
+            alignment=Alignment(horizontal="center", vertical="center"),
+            font=Font(bold=True, size=20),
+        )
         self.sheet.insert_rows(1)
-        self.sheet.merge_cells(start_row=1, start_column=1, end_row=1, end_column=self.sheet.max_column)
+        self.sheet.merge_cells(
+            start_row=1, start_column=1, end_row=1, end_column=self.sheet.max_column
+        )
         self.sheet.cell(1, 1, value=header)
-        self.sheet.cell(1,1).style = header_style
+        self.sheet.cell(1, 1).style = header_style
 
     def add_subheader(self, left_header: str, right_header: str):
-        header_style = NamedStyle("sub_header_style", alignment=Alignment(horizontal="center", vertical="center"), font=Font(bold=True, size=10))
+        header_style = NamedStyle(
+            "sub_header_style",
+            alignment=Alignment(horizontal="center", vertical="center"),
+            font=Font(bold=True, size=10),
+        )
         self.sheet.insert_rows(1)
         self.sheet.cell(1, 1, value=left_header)
         self.sheet.cell(1, self.sheet.max_column, value=right_header)
         self.sheet.cell(1, 1).style = header_style
         self.sheet.cell(1, self.sheet.max_column).style = header_style
-
-        
 
     def save(self, filename: str):
         self.workbook.save(filename)
