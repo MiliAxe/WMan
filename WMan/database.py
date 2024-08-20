@@ -129,13 +129,26 @@ class Customer(BaseModel):
 
     @classmethod
     def add(cls, name: str) -> "Customer":
+        if cls.does_customer_exist(name):
+            raise Exception("A customer with this name already exists")
         customer = Customer.create(name=name)
         return customer
+
+    @classmethod
+    def does_customer_exist(cls, name: str) -> bool:
+        found_customer = cls.select().where(cls.name == name)
+        if found_customer:
+            return True
+        return False
 
     @classmethod
     def get_customer_id(cls, customer_name: str) -> int:
         selected_customer = Customer.get(Customer.name == customer_name)
         return selected_customer.id
+
+    @classmethod
+    def get_filtered(cls, filters: dict[str, str | int | None]):
+        return cls.select()
 
 
 class Order(BaseModel):

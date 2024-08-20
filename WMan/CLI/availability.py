@@ -1,9 +1,10 @@
 from typing import Optional
 
-from typer import Typer, prompt, Argument
+from typer import Argument, Typer
 from typing_extensions import Annotated
-from WMan.ProductManager import ProductManager, ColumnIndexes
+
 from WMan.database import ProductInfo
+from WMan.ProductManager import ColumnIndexes, ProductManager
 
 app = Typer()
 
@@ -22,7 +23,9 @@ def add_batch(filepath: str, code_column_index: int = 1, count_column_index: int
     """
     Add to the availability of the product from the specified file
     """
-    indexes = ColumnIndexes(code_column=code_column_index, count_column=count_column_index)
+    indexes = ColumnIndexes(
+        code_column=code_column_index, count_column=count_column_index
+    )
     ProductManager.add_count_batch(filepath, indexes)
 
 
@@ -42,9 +45,10 @@ def reduce_batch(
     """
     Reduce the availability of the products from the specified file
     """
-    indexes = ColumnIndexes(code_column=code_column_index, count_column=count_column_index)
+    indexes = ColumnIndexes(
+        code_column=code_column_index, count_column=count_column_index
+    )
     ProductManager.reduce_count_batch(filepath, indexes)
-
 
 
 @app.command()
