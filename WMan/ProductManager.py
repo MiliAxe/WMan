@@ -114,7 +114,9 @@ class ProductManager:
         writer.add_data(data)
         writer.add_headers(headers)
         writer.add_row_index_column()
-        writer.make_table("Pricelist")
+        writer.add_subheader("Cool", "Subheader")
+        writer.add_header("Product list")
+        writer.make_table("Pricelist", start_row=3)
         writer.set_column_currency_format(6)
         writer.set_optimal_column_widths()
 
@@ -247,10 +249,12 @@ class ProductManager:
         writer.add_data(data)
         writer.add_headers(headers)
         writer.add_row_index_column()
-        writer.make_table("Availability")
+        writer.set_optimal_column_widths()
+        writer.add_subheader("Cool", "Subheader")
+        writer.add_header("Availability list")
+        writer.make_table("Availability", start_row=3)
         writer.set_column_currency_format(7)
         writer.set_column_currency_format(6)
-        writer.set_optimal_column_widths()
 
         writer.save(filepath)
 
