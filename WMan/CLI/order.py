@@ -1,4 +1,8 @@
 import typer
+from WMan.OrderManager import OrderManager, OrderProductInfo
+from datetime import datetime
+import jdatetime
+import rich
 
 app = typer.Typer()
 
@@ -8,11 +12,20 @@ def create(
     customer_name: str = typer.Argument(
         ..., help="The name of the customer for whom the order is being created."
     ),
+    date: datetime = typer.Option(
+        None, help="The date of the order in the format 'YYYY-MM-DD'."
+    ),
 ):
     """
     Create a new order for a specified customer.
     """
-    pass
+    input_date = datetime.today()
+    if date:
+        input_date = jdatetime.datetime.strptime(
+            f"{date.date()}", "%Y-%m-%d"
+        ).togregorian()
+    new_order_manager = OrderManager.new(customer_name, input_date)
+    rich.print(f"New order with ID {new_order_manager.get_id()} was created")
 
 
 @app.command()
@@ -28,7 +41,9 @@ def add(
     """
     Add a product to an existing order.
     """
-    pass
+    order = OrderManager.from_id(order_id)
+    new_order_product = OrderProductInfo(product_code, count)
+    order.add_product(new_order_product)
 
 
 @app.command()
@@ -67,7 +82,8 @@ def remove(
     """
     Remove a product from an existing order.
     """
-    pass
+    order = OrderManager.from_id(order_id)
+    order.remove_product(OrderProductInfo(product_code))
 
 
 @app.command()
@@ -104,7 +120,8 @@ def add_count(
     """
     Increase the quantity of a product in an existing order.
     """
-    pass
+    order = OrderManager.from_id(order_id)
+    order.add_count(OrderProductInfo(product_code, count))
 
 
 @app.command()

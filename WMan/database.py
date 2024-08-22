@@ -156,28 +156,55 @@ class Order(BaseModel):
     customer = ForeignKeyField(Customer, backref="orders")
 
     @classmethod
-    def create_order(cls, customer_id: int) -> "Order":
-        selected_customer = get_or_raise(Customer, str(customer_id))
-
-        order = Order.create(customer=selected_customer)
-        return order
+    def new(cls, customer_name: str, date: datetime) -> "Order":
+        if not Customer.does_customer_exist(customer_name):
+            raise Exception(f"Customer with name '{customer_name}' does not exist")
+        found_customer = Customer.get(Customer.name == customer_name)
+        new_order = Order.create(customer=found_customer, date=date)
+        return new_order
 
     @classmethod
-    def add_product_to_order(cls, order_id: int, product_code: str, count: int) -> None:
+    def add_product(cls, order_id: int, product_code: str, count: int) -> None:
         if Product.get_count(product_code) < count:
             raise Exception("There is not enough available product for this order")
 
-        selected_order = Order.get(Order.id == order_id)
-        selected_product = Product.get(Product.id == product_code)
+        selected_order = get_or_raise(Order, order_id)
+        selected_product = get_or_raise(Product, product_code)
+        Product.reduce_count(product_code, count)
         return OrderProduct.create(
             count=count, order=selected_order, product=selected_product
         )
+
+    @classmethod
+    def remove_product(cls, order_id: int, product_code: str) -> None:
+        order_product = OrderProduct.find_by_ids(order_id, product_code)
+        order_product.delete_instance()
+        Product.add_count(product_code, order_product.count)
+
+    @staticmethod
+    def add_count_product(order_id: int, product_code: str, count: int):
+        order_product = OrderProduct.find_by_ids(order_id, product_code)
+        if Product.get_count(product_code) < count:
+            raise Exception("There is not enough product to add to order")
+        Product.reduce_count(product_code, count)
+        order_product.count += count
+        order_product.save()
 
 
 class OrderProduct(BaseModel):
     count = IntegerField()
     product = ForeignKeyField(Product, backref="orders")
     order = ForeignKeyField(Order, backref="products")
+
+    @classmethod
+    def find_by_ids(cls, order_id: int, product_code: str) -> "OrderProduct":
+        found_order = get_or_raise(Order, order_id)
+        found_product = get_or_raise(Product, product_code)
+
+        order_product = OrderProduct.get(
+            OrderProduct.order == found_order, OrderProduct.product == found_product
+        )
+        return order_product
 
     class Meta:
         primary_key = CompositeKey("product", "order")
