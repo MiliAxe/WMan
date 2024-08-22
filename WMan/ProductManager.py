@@ -276,7 +276,16 @@ class ProductManager:
         products = []
         for code in codes:
             selected_product = get_or_raise(Product, code)
-            products.append(selected_product)
+            products.append(
+                ProductInfo(
+                    selected_product.id,
+                    selected_product.description,
+                    selected_product.brand,
+                    selected_product.count_in_carton,
+                    selected_product.price,
+                    selected_product.count,
+                )
+            )
         ProductManager.print_availability(products)
 
 
