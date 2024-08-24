@@ -1,11 +1,23 @@
 from datetime import datetime
+from typing import Callable
+
 import WMan.database as database
+from WMan.ProductManager import ColumnIndexes
+from WMan.sheetutils.reader import SheetReader
 
 
 class OrderProductInfo:
     def __init__(self, product_code: str | None = None, count: int | None = None):
         self.product_code = product_code
         self.count = count
+
+
+class OrderProductIndexes:
+    def __init__(
+        self, product_code_index: int | None = None, count_index: int | None = None
+    ):
+        self.product_code = product_code_index
+        self.count = count_index
 
 
 class OrderManager:
@@ -23,6 +35,36 @@ class OrderManager:
         found_order = database.get_or_raise(database.Order, order_id)
         new_order_manager = OrderManager(found_order)
         return new_order_manager
+
+    @staticmethod
+    def get_order_product_from_indexes(
+        order_product_list: list[str | int], indexes: OrderProductIndexes
+    ):
+        return OrderProductInfo(
+            product_code=(
+                order_product_list[indexes.product_code]
+                if indexes.product_code is not None
+                else None
+            ),
+            count=(
+                order_product_list[indexes.count] if indexes.count is not None else None
+            ),
+        )
+
+    def batch_apply(
+        self,
+        filepath: str,
+        indexes: ColumnIndexes,
+        method_to_apply: Callable[[OrderProductInfo], None],
+        *args,
+    ):
+        reader = SheetReader(filepath)
+        data = reader.get_data()
+        for order_product in data:
+            new_order_product_info = self.get_order_product_from_indexes(
+                order_product, indexes
+            )
+            method_to_apply(new_order_product_info, *args)
 
     def add_product(self, order_product: OrderProductInfo):
         database.Order.add_product(

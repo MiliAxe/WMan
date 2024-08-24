@@ -1,8 +1,10 @@
-import typer
-from WMan.OrderManager import OrderManager, OrderProductInfo
 from datetime import datetime
+
 import jdatetime
 import rich
+import typer
+
+from WMan.OrderManager import OrderManager, OrderProductIndexes, OrderProductInfo
 
 app = typer.Typer()
 
@@ -67,7 +69,9 @@ def add_batch(
     """
     Add multiple products to an order from an Excel (.xlsx) file.
     """
-    pass
+    order = OrderManager.from_id(order_id)
+    indexes = OrderProductIndexes(product_code_index, count_index)
+    order.batch_apply(filename, indexes, order.add_product)
 
 
 @app.command()
@@ -102,7 +106,9 @@ def remove_batch(
     """
     Remove multiple products from an order using an Excel (.xlsx) file.
     """
-    pass
+    order = OrderManager.from_id(order_id)
+    indexes = OrderProductIndexes(product_code_index=product_code_index)
+    order.batch_apply(filename, indexes, order.remove_product)
 
 
 @app.command()
@@ -144,7 +150,9 @@ def add_count_batch(
     """
     Increase the quantities of multiple products in an order using an Excel (.xlsx) file.
     """
-    pass
+    order = OrderManager.from_id(order_id)
+    indexes = OrderProductIndexes(product_code_index, count_index)
+    order.batch_apply(filename, indexes, order.add_count)
 
 
 @app.command()
@@ -186,3 +194,6 @@ def reduce_count_batch(
     """
     Decrease the quantities of multiple products in an order using an Excel (.xlsx) file.
     """
+    order = OrderManager.from_id(order_id)
+    indexes = OrderProductIndexes(product_code_index, count_index)
+    order.batch_apply(filename, indexes, order.reduce_count)
