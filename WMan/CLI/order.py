@@ -1,10 +1,11 @@
 from datetime import datetime
+from typing_extensions import Annotated
 
 import jdatetime
 import rich
 import typer
 
-from WMan.OrderManager import OrderManager, OrderProductIndexes, OrderProductInfo
+from WMan.OrderManager import OrderManager, OrderProductIndexes, OrderProductInfo, OrdersIO, OrderIO
 
 app = typer.Typer()
 
@@ -197,3 +198,45 @@ def reduce_count_batch(
     order = OrderManager.from_id(order_id)
     indexes = OrderProductIndexes(product_code_index, count_index)
     order.batch_apply(filename, indexes, order.reduce_count)
+
+
+@app.command()
+def list(
+    customer: Annotated[
+        str, typer.Option(help="Filter the orders by customer name")
+    ] = None,
+    start_date: Annotated[
+        datetime, typer.Option(help="Filter orders by their start date")
+    ] = None,
+    end_date: Annotated[
+        datetime, typer.Option(help="Filter orders by their end date")
+    ] = None,
+    min_price: Annotated[
+        int, typer.Option(help="Filter orders by their minimum price")
+    ] = None,
+    max_price: Annotated[
+        int, typer.Option(help="Filter orders by their maximum price")
+    ] = None,
+):
+    """
+    List orders alongside their customer, product count and total price
+    """
+    filters = {
+        "customer": customer,
+        "start_date": start_date,
+        "end_date": end_date,
+        "min_price": min_price,
+        "max_price": max_price,
+    }
+    orders_io = OrdersIO(OrderManager.get_orders(filters))
+    orders_io.print_orders()
+
+@app.command()
+def info(order_id = typer.Argument(..., help="The ID of the order to get detailed information for.")):
+    """
+    Get detailed information about a specific order.
+    """
+    order = OrderManager.from_id(order_id)
+    product_infos = order.get_products()
+    order_io = OrderIO(product_infos)
+    order_io.print_products()

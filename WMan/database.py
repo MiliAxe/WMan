@@ -10,6 +10,7 @@ from peewee import (
     IntegerField,
     Model,
     SqliteDatabase,
+    fn
 )
 
 db = SqliteDatabase("warehouse.db")
@@ -43,6 +44,28 @@ class ProductInfo:
             and self.price == value.price
             and self.count == value.count
         )
+
+
+class OrderProductInfo:
+    def __init__(self, product_code: str | None = None, count: int | None = None):
+        self.product_code = product_code
+        self.count = count
+
+
+class OrderInfo:
+    def __init__(
+        self,
+        order_id: int = None,
+        total_count: int = None,
+        total_price: int = None,
+        customer_name: str = None,
+        date: datetime = None,
+    ):
+        self.id = order_id
+        self.total_count = total_count
+        self.total_price = total_price
+        self.customer_name = customer_name
+        self.date = date
 
 
 class BaseModel(Model):
@@ -122,6 +145,18 @@ class Product(BaseModel):
             )
             for product in query
         ]
+
+    @classmethod
+    def get_product_info(cls, product_code: str) -> ProductInfo:
+        selected_product = get_or_raise(cls, product_code)
+        return ProductInfo(
+            code=selected_product.id,
+            description=selected_product.description,
+            brand=selected_product.brand,
+            count_in_carton=selected_product.count_in_carton,
+            price=selected_product.price,
+            count=selected_product.count,
+        )
 
 
 class Customer(BaseModel):
@@ -203,6 +238,87 @@ class Order(BaseModel):
         Product.add_count(product_code, count)
         order_product.save()
 
+    @classmethod
+    def get_filtered(cls, filters: Dict[str, str | int | None] = None):
+        query = cls.select()
+        subquery = (OrderProduct
+                        .select(fn.SUM(OrderProduct.product.price * Product.price))
+                        .join(Product)
+                        .where(OrderProduct.order == cls.id))
+
+        if filters:
+            for field, value in filters.items():
+                if field == "customer" and value is not None:
+                    query = query.where(cls.customer.name == value)
+                if field == "min_price" and value is not None:
+                    subquery = (OrderProduct
+                                    .select(fn.SUM(OrderProduct.product.price * Product.price))
+                                    .join(Product)
+                                    .where(OrderProduct.order == cls.id))
+                    query = query.where(subquery >= value)
+                if field == "max_price" and value is not None:
+                    subquery = (OrderProduct
+                                    .select(fn.SUM(OrderProduct.product.price * Product.price))
+                                    .join(Product)
+                                    .where(OrderProduct.order == cls.id))
+                    query = query.where(subquery <= value)
+                if field == "start_date" and value is not None:
+                    query = query.where(cls.date >= value)
+                if field == "end_date" and value is not None:
+                    query = query.where(cls.date <= value)
+
+        return [
+            OrderInfo(
+                order.id,
+                cls.get_order_total_count(order.id),
+                cls.get_order_total_price(order.id),
+                order.customer.name,
+                order.date,
+            )
+            for order in query
+        ]
+
+    @classmethod
+    def get_order_products(cls, order_id: int) -> list[OrderProductInfo]:
+        selected_order = get_or_raise(cls, order_id)
+        return [
+            OrderProductInfo(
+                product_code=order_product.product.id, count=order_product.count
+            )
+            for order_product in selected_order.products
+        ]
+
+    @classmethod
+    def get_order_product_infos(cls, order_id: int) -> list[ProductInfo]:
+        selected_order = get_or_raise(cls, order_id)
+        return [
+            ProductInfo(
+                code=order_product.product.id,
+                description=order_product.product.description,
+                brand=order_product.product.brand,
+                count_in_carton=order_product.product.count_in_carton,
+                price=order_product.product.price,
+                count=order_product.count,
+            )
+            for order_product in selected_order.products
+        ]
+
+    @classmethod
+    def get_order_total_count(cls, order_id: int) -> int:
+        selected_order = get_or_raise(cls, order_id)
+        return sum(order_product.count for order_product in selected_order.products)
+
+    @classmethod
+    def get_order_total_price(cls, order_id: int) -> int:
+        selected_order = get_or_raise(cls, order_id)
+        return sum(
+            (
+                order_product.count
+                * Product.get_product_info(order_product.product).price
+            )
+            for order_product in selected_order.products
+        )
+
 
 class OrderProduct(BaseModel):
     count = IntegerField()
@@ -241,4 +357,9 @@ def create_tables():
 
 
 if __name__ == "__main__":
-    create_tables()
+    # print(Order.get_order_total_count(1))
+    orders = Order.get_filtered({
+        "min_price": 0,
+    })
+    for order in orders:
+        print(order.id, order.total_count, order.total_price, order.customer_name, order.date)
