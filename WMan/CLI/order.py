@@ -162,7 +162,8 @@ def reduce_count(
     """
     Decrease the quantity of a product in an existing order.
     """
-    pass
+    order = OrderManager.from_id(order_id)
+    order.reduce_count(OrderProductInfo(product_code, count))
 
 
 @app.command()

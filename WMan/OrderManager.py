@@ -39,5 +39,10 @@ class OrderManager:
             self.get_id(), order_product.product_code, order_product.count
         )
 
+    def reduce_count(self, order_product: OrderProductInfo):
+        database.Order.reduce_count_product(
+            self.get_id(), order_product.product_code, order_product.count
+        )
+
     def get_id(self):
         return self.order.id

@@ -190,6 +190,19 @@ class Order(BaseModel):
         order_product.count += count
         order_product.save()
 
+    @staticmethod
+    def reduce_count_product(order_id, product_code: str, count: int):
+        order_product = OrderProduct.find_by_ids(order_id, product_code)
+        if order_product.count < count:
+            raise Exception("The order does not have this amount of product to reduce")
+
+        if order_product.count == count:
+            order_product.delete_instance()
+        else:
+            order_product.count -= count
+        Product.add_count(product_code, count)
+        order_product.save()
+
 
 class OrderProduct(BaseModel):
     count = IntegerField()
