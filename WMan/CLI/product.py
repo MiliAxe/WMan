@@ -111,7 +111,7 @@ def update(
         count_in_carton=new_count_in_carton,
         price=new_price,
     )
-    ProductManager.update(code, edited_product)
+    ProductManager.update(edited_product)
 
 
 @app.command()
