@@ -10,7 +10,7 @@ from peewee import (
     IntegerField,
     Model,
     SqliteDatabase,
-    fn
+    fn,
 )
 
 db = SqliteDatabase("warehouse.db")
@@ -111,6 +111,7 @@ class Product(BaseModel):
     def remove(cls, product_code: str):
         product = get_or_raise(Product, product_code)
         product.delete_instance()
+        OrderProduct.delete().where(OrderProduct.product == product).execute()
 
     @classmethod
     def get_count(cls, product_code: str):
@@ -241,26 +242,33 @@ class Order(BaseModel):
     @classmethod
     def get_filtered(cls, filters: Dict[str, str | int | None] = None):
         query = cls.select()
-        subquery = (OrderProduct
-                        .select(fn.SUM(OrderProduct.product.price * Product.price))
-                        .join(Product)
-                        .where(OrderProduct.order == cls.id))
+        subquery = (
+            OrderProduct.select(fn.SUM(OrderProduct.product.price * Product.price))
+            .join(Product)
+            .where(OrderProduct.order == cls.id)
+        )
 
         if filters:
             for field, value in filters.items():
                 if field == "customer" and value is not None:
                     query = query.where(cls.customer.name == value)
                 if field == "min_price" and value is not None:
-                    subquery = (OrderProduct
-                                    .select(fn.SUM(OrderProduct.product.price * Product.price))
-                                    .join(Product)
-                                    .where(OrderProduct.order == cls.id))
+                    subquery = (
+                        OrderProduct.select(
+                            fn.SUM(OrderProduct.product.price * Product.price)
+                        )
+                        .join(Product)
+                        .where(OrderProduct.order == cls.id)
+                    )
                     query = query.where(subquery >= value)
                 if field == "max_price" and value is not None:
-                    subquery = (OrderProduct
-                                    .select(fn.SUM(OrderProduct.product.price * Product.price))
-                                    .join(Product)
-                                    .where(OrderProduct.order == cls.id))
+                    subquery = (
+                        OrderProduct.select(
+                            fn.SUM(OrderProduct.product.price * Product.price)
+                        )
+                        .join(Product)
+                        .where(OrderProduct.order == cls.id)
+                    )
                     query = query.where(subquery <= value)
                 if field == "start_date" and value is not None:
                     query = query.where(cls.date >= value)
@@ -358,8 +366,16 @@ def create_tables():
 
 if __name__ == "__main__":
     # print(Order.get_order_total_count(1))
-    orders = Order.get_filtered({
-        "min_price": 0,
-    })
+    orders = Order.get_filtered(
+        {
+            "min_price": 0,
+        }
+    )
     for order in orders:
-        print(order.id, order.total_count, order.total_price, order.customer_name, order.date)
+        print(
+            order.id,
+            order.total_count,
+            order.total_price,
+            order.customer_name,
+            order.date,
+        )
