@@ -5,7 +5,13 @@ import jdatetime
 import rich
 import typer
 
-from WMan.OrderManager import OrderManager, OrderProductIndexes, OrderProductInfo, OrdersIO, OrderIO
+from WMan.OrderManager import (
+    OrderManager,
+    OrderProductIndexes,
+    OrderProductInfo,
+    OrdersIO,
+    OrderIO,
+)
 
 app = typer.Typer()
 
@@ -231,12 +237,23 @@ def list(
     orders_io = OrdersIO(OrderManager.get_orders(filters))
     orders_io.print_orders()
 
+
 @app.command()
-def info(order_id = typer.Argument(..., help="The ID of the order to get detailed information for.")):
+def info(
+    order_id=typer.Argument(
+        ..., help="The ID of the order to get detailed information for."
+    ),
+    output: str = typer.Option(
+        None, help="Path to where the order's .xlsx file will be saved'"
+    ),
+):
     """
     Get detailed information about a specific order.
     """
     order = OrderManager.from_id(order_id)
     product_infos = order.get_products()
     order_io = OrderIO(product_infos)
-    order_io.print_products()
+    if output:
+        order_io.save_products(output)
+    else:
+        order_io.print_products()
