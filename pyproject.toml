@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "WMan"
+version = "0.1.0"
+description = "A simple CLI warehouse management system"
+readme = "README.md"
+authors = [{ name = "Milad Zarei", email = "miliaxe0@gmail.com" }]
+dependencies = [
+    "typer",
+    "babel",
+    "openpyxl",
+    "rich",
+    "peewee",
+]
+
+[project.scripts]
+wman = "WMan.__main__:app"

@@ -1,4 +1,6 @@
-typer~=0.12.3
-openpyxl~=3.2.0b1
-peewee~=3.17.6
-rich~=13.7.1
+typer
+openpyxl
+peewee
+rich
+jdatetime
+babel
