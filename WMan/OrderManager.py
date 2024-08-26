@@ -6,8 +6,8 @@ from rich.table import Table
 import WMan.database as database
 from WMan.ProductManager import ColumnIndexes
 from WMan.sheetutils.reader import SheetReader
+from WMan.sheetutils.writer import SheetWriter
 from WMan.database import OrderProductInfo
-
 
 
 class OrderProductIndexes:
@@ -58,6 +58,7 @@ class OrdersIO:
 
         rich.print(self.table)
 
+
 class OrderIO:
     def __init__(self, products: list[database.ProductInfo]) -> None:
         self.products = products
@@ -100,7 +101,35 @@ class OrderIO:
         )
 
         rich.print(self.table)
-    
+
+    def save_products(self, path: str) -> None:
+        data = [
+            [
+                product.code,
+                product.description,
+                product.brand,
+                product.count,
+                product.price,
+                product.price * product.count,
+            ]
+            for product in self.products
+        ]
+
+        headers = ["Code", "Description", "Brand", "Count", "Price", "Full Price"]
+
+        writer = SheetWriter()
+        writer.add_data(data)
+        writer.add_headers(headers)
+        writer.add_row_index_column()
+        writer.add_subheader("Buyer:", "Order")
+        writer.add_header("Order")
+        writer.make_table("Order", start_row=3)
+        writer.set_column_currency_format(7)
+        writer.set_column_currency_format(6)
+        writer.set_optimal_column_widths()
+
+        writer.save(path)
+
 
 class OrderManager:
     def __init__(self, order: database.Order) -> None:
@@ -167,12 +196,14 @@ class OrderManager:
         database.Order.reduce_count_product(
             self.get_id(), order_product.product_code, order_product.count
         )
-    
+
     def get_products(self) -> list[database.ProductInfo]:
         return database.Order.get_order_product_infos(self.get_id())
 
     @staticmethod
-    def get_orders(filters: dict[str, str | int | None] = {}) -> list[database.OrderInfo]:
+    def get_orders(
+        filters: dict[str, str | int | None] = {},
+    ) -> list[database.OrderInfo]:
         return database.Order.get_filtered(filters)
 
     def get_id(self):
