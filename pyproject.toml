@@ -14,6 +14,7 @@ dependencies = [
     "openpyxl",
     "rich",
     "peewee",
+    "appdirs",
 ]
 
 [project.scripts]

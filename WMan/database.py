@@ -1,6 +1,8 @@
 import datetime
+from pathlib import Path
 from typing import Dict, Optional, Type
 
+from appdirs import user_data_dir
 from peewee import (
     CharField,
     CompositeKey,
@@ -13,7 +15,11 @@ from peewee import (
     fn,
 )
 
-db = SqliteDatabase("warehouse.db")
+Path(user_data_dir(appname="WMan", appauthor="Mili")).mkdir(parents=True, exist_ok=True)
+
+db = SqliteDatabase(
+    user_data_dir(appname="WMan", appauthor="Mili") + "/" + "warehouse.db"
+)
 
 
 class ProductInfo:
