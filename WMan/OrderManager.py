@@ -1,13 +1,15 @@
 import datetime
 from typing import Callable
+
 import rich
 from rich.table import Table
 
 import WMan.database as database
+from WMan.database import OrderProductInfo
 from WMan.ProductManager import ColumnIndexes
 from WMan.sheetutils.reader import SheetReader
 from WMan.sheetutils.writer import SheetWriter
-from WMan.database import OrderProductInfo
+from WMan.utils import format_to_rials
 
 
 class OrderProductIndexes:
@@ -35,7 +37,7 @@ class OrdersIO:
                 str(order.id),
                 order.customer_name,
                 order.date.strftime("%Y-%m-%d"),
-                str(order.total_price),
+                format_to_rials(order.total_price),
                 str(order.total_count),
             )
         total_price = sum([order.total_price for order in self.orders])
@@ -47,7 +49,7 @@ class OrdersIO:
             "",
             "",
             rich.text.Text(
-                f"{total_price}",
+                f"{format_to_rials(total_price)}",
                 style="bold green",
             ),
             rich.text.Text(
@@ -78,8 +80,8 @@ class OrderIO:
                 product.description,
                 product.brand,
                 str(product.count),
-                str(product.price),
-                str(product.price * product.count),
+                format_to_rials(product.price),
+                format_to_rials(product.price * product.count),
             )
         total_price = sum([product.price * product.count for product in self.products])
         total_count = sum([product.count for product in self.products])
@@ -95,7 +97,7 @@ class OrderIO:
             ),
             "",
             rich.text.Text(
-                f"{total_price}",
+                f"{format_to_rials(total_price)}",
                 style="bold green",
             ),
         )

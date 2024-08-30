@@ -1,12 +1,12 @@
 from typing import Callable
 
-import babel.numbers
 import rich
 from rich.table import Table
 
 from WMan.database import Product, ProductInfo, db, get_or_raise
 from WMan.sheetutils.reader import SheetReader
 from WMan.sheetutils.writer import SheetWriter
+from WMan.utils import format_to_rials
 
 
 class ColumnIndexes:
@@ -87,9 +87,7 @@ class ProductManager:
                 product.description,
                 product.brand,
                 str(product.count_in_carton),
-                babel.numbers.format_currency(
-                    product.price, "IRR", format="¤¤ #,##0", locale="en_US"
-                ),
+                format_to_rials(product.price),
             )
 
         rich.print(table)
@@ -192,14 +190,9 @@ class ProductManager:
                 product.description,
                 product.brand,
                 str(product.count_in_carton),
-                babel.numbers.format_currency(
-                    product.price, "IRR", format="¤¤ #,##0", locale="en_US"
-                ),
-                babel.numbers.format_currency(
+                format_to_rials(product.price),
+                format_to_rials(
                     product.price * product.count,
-                    "IRR",
-                    format="¤¤ #,##0",
-                    locale="en_US",
                 ),
                 str(product.count),
             )
@@ -211,9 +204,7 @@ class ProductManager:
             "",
             "",
             "",
-            babel.numbers.format_currency(
-                total_price, "IRR", format="¤¤ #,##0", locale="en_US"
-            ),
+            format_to_rials(total_price),
             str(total_count),
         )
 
