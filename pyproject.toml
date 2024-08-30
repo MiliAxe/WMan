@@ -17,4 +17,4 @@ dependencies = [
 ]
 
 [project.scripts]
-wman = "WMan.__main__:app"
+wman = "WMan.__main__:main"

@@ -22,6 +22,11 @@ app.add_typer(
 )
 app.add_typer(order.app, name="order", help="Manage and get order information")
 
-if __name__ == "__main__":
+
+def main() -> None:
     create_tables()
     app()
+
+
+if __name__ == "__main__":
+    main()
