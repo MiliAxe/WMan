@@ -62,16 +62,23 @@ class OrdersIO:
 
 
 class OrderIO:
-    def __init__(self, products: list[database.ProductInfo]) -> None:
-        self.products = products
+    def __init__(self, order: database.Order) -> None:
+        self.order = order
+        self.products = database.Order.get_order_product_infos(self.order.id)
 
-        self.table = Table(title="Products")
+        self.table = Table(title=f"Order Products | {get_local_date(self.order.date)}")
         self.table.add_column("Code", style="cyan")
         self.table.add_column("Description", style="magenta")
         self.table.add_column("Brand", style="green")
         self.table.add_column("Count", style="blue")
         self.table.add_column("Price", style="yellow")
         self.table.add_column("Total Price", style="red")
+
+    @staticmethod
+    def from_id(order_id: int) -> "OrderIO":
+        found_order = database.get_or_raise(database.Order, order_id)
+        new_io = OrderIO(found_order)
+        return new_io
 
     def print_products(self):
         for product in self.products:
@@ -123,7 +130,7 @@ class OrderIO:
         writer.add_data(data)
         writer.add_headers(headers)
         writer.add_row_index_column()
-        writer.add_subheader("Buyer:", "Order")
+        writer.add_subheader(self.order.customer.name, get_local_date(self.order.date))
         writer.add_header("Order")
         writer.make_table("Order", start_row=3)
         writer.set_column_currency_format(7)

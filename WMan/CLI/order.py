@@ -250,9 +250,7 @@ def info(
     """
     Get detailed information about a specific order.
     """
-    order = OrderManager.from_id(order_id)
-    product_infos = order.get_products()
-    order_io = OrderIO(product_infos)
+    order_io = OrderIO.from_id(order_id)
     if output:
         order_io.save_products(output)
     else:
