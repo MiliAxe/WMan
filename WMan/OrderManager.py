@@ -9,7 +9,7 @@ from WMan.database import OrderProductInfo
 from WMan.ProductManager import ColumnIndexes
 from WMan.sheetutils.reader import SheetReader
 from WMan.sheetutils.writer import SheetWriter
-from WMan.utils import format_to_rials
+from WMan.utils import format_to_rials, get_local_date
 
 
 class OrderProductIndexes:
@@ -36,7 +36,7 @@ class OrdersIO:
             self.table.add_row(
                 str(order.id),
                 order.customer_name,
-                order.date.strftime("%Y-%m-%d"),
+                get_local_date(order.date),
                 format_to_rials(order.total_price),
                 str(order.total_count),
             )
